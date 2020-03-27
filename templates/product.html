@@ -27,21 +27,26 @@
 
           <div class="mb-3">
             <a href="">
-              <span class="badge purple mr-1">Category 2</span>
+              <span class="badge purple mr-1">{{object.get_category_display}}</span>
             </a>
-            <a href="">
-              <span class="badge blue mr-1">New</span>
-            </a>
-            <a href="">
-              <span class="badge red mr-1">Bestseller</span>
-            </a>
+
           </div>
 
           <p class="lead">
+
+
+
+            {% if object.discount_price %}
             <span class="mr-1">
-              <del>$200</del>
+              <del>${{object.price}}</del>
             </span>
-            <span>$100</span>
+            <span> {{object.discount_price}}</span>
+
+            {% else %}
+
+            <span> {{object.price}}</span>
+
+            {% endif %}
           </p>
 
           <p class="lead font-weight-bold">Description</p>
