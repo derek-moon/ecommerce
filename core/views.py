@@ -25,6 +25,9 @@ class HomeView(ListView):
     model = Item
     template_name = "home.html"
 
+    # This template will be rendered against a context containing a variable called
+    # object_list that contains all the objects.
+
 
 class ItemDetailView(DetailView):
     model = Item
