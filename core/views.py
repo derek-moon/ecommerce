@@ -23,6 +23,10 @@ def checkout(request):
 
 class HomeView(ListView):
     model = Item
+
+    paginate_by = 10
+    # is_paginated & page_obj passed in to home.html
+
     template_name = "home.html"
 
     # This template will be rendered against a context containing a variable called
