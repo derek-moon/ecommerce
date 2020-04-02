@@ -3,11 +3,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
-from .models import Item, OrderItem, Order
 from django.views.generic import ListView, DetailView, View
 from django.shortcuts import redirect
 from django.utils import timezone
-# Create your views here.
+from .forms import CheckoutForm
+from .models import Item, OrderItem, Order, BillingAddress
 
 
 def products(request):
@@ -17,23 +17,53 @@ def products(request):
     return render(request, "products.html", context)
 
 
-def checkout(request):
-    context = {
+class CheckoutView(View):
+    def get(self, *args, **kwargs):
+        form = CheckoutForm()
+        context = {
+            'form': form
+        }
+        return render(self.request, "checkout.html", context)
 
-    }
-    return render(request, "checkout.html", context)
+    def post(self, *args, **kwargs):
+        form = CheckoutForm(self.request.POST or None)
+        try:
+            order = Order.objects.get(user=self.request.user, ordered=False)
+
+            if form.is_valid():
+                street_address = form.cleaned_data.get('street_address')
+                apartment_address = form.cleaned_data.get('apartment_address')
+                country = form.cleaned_data.get('country')
+                zip = form.cleaned_data.get('zip')
+                # TODO
+                # same_shipping_address=form.cleaned_data.get(' same_shipping_address')
+                # save_info=form.cleaned_data.get('save_info')
+                payment_option = form.cleaned_data.get('payment_option')
+
+                billing_address = BillingAddress(
+                    user=self.request.user,
+                    street_address=street_address,
+                    apartment_address=apartment_address,
+                    zip=zip,
+                    country=country,
+                )
+                billing_address.save()
+                order.billing_address = billing_address
+                order.save()
+                return redirect('core:checkout')
+
+        except ObjectDoesNotExist:
+            messages.error(self.request, "You do not have an active order")
+            return redirect("core:order-summary")
 
 
 class HomeView(ListView):
     model = Item
-
-    paginate_by = 10
     # is_paginated & page_obj passed in to home.html
+    paginate_by = 10
 
+    # If the view is accessed from a GET request, an object_list (contains all the objects) is returned in the response
     template_name = "home.html"
-
-    # This template will be rendered against a context containing a variable called
-    # object_list that contains all the objects.
 
 
 class OrderSummaryView(LoginRequiredMixin, View):
