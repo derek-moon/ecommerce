@@ -26,18 +26,22 @@ class CheckoutView(View):
         return render(self.request, "checkout.html", context)
 
     def post(self, *args, **kwargs):
+        print(self.request.POST)
         form = CheckoutForm(self.request.POST or None)
+
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
 
             if form.is_valid():
+                print(form.cleaned_data)
                 street_address = form.cleaned_data.get('street_address')
                 apartment_address = form.cleaned_data.get('apartment_address')
                 country = form.cleaned_data.get('country')
                 zip = form.cleaned_data.get('zip')
                 # TODO
-                # same_shipping_address=form.cleaned_data.get(' same_shipping_address')
-                # save_info=form.cleaned_data.get('save_info')
+                same_shipping_address = form.cleaned_data.get(
+                    'same_shipping_address')
+                save_info = form.cleaned_data.get('save_info')
                 payment_option = form.cleaned_data.get('payment_option')
 
                 billing_address = BillingAddress(
@@ -51,6 +55,9 @@ class CheckoutView(View):
                 order.billing_address = billing_address
                 order.save()
 
+                return redirect('core:checkout')
+            else:
+                messages.warning(self.request, "failed")
                 return redirect('core:checkout')
 
         except ObjectDoesNotExist:
