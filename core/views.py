@@ -50,6 +50,7 @@ class CheckoutView(View):
                 billing_address.save()
                 order.billing_address = billing_address
                 order.save()
+
                 return redirect('core:checkout')
 
         except ObjectDoesNotExist:

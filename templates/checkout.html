@@ -26,73 +26,67 @@
           <form method="POST" class="card-body">
             {% csrf_token %}
             
-            <!--address-->
-            
-            <div class="md-form mb-5">
-                  {{ form.street_address }}
-                  <label for="shipping_address" class="">Address</label>
-                  {% comment %}<input type='text' placeholder='1234 Main St' id="shipping_address" name='shipping_address' class='form-control' />{% endcomment %}
-            </div>
+                <div class="form-group ml-10 ">
+                  <label for="shipping_address" class="ml-3">Address</label>
+                  <div class="col-sm-10">
+                     {{ form.street_address }}
+                  </div>
 
-            <div class="md-form mb-5">
-                  {% comment %} <input type='text'  id='shipping_address2' name='shipping_address2' class='form-control' />{% endcomment %}
-                  <label for="shipping_address2" class="">Address 2 (optional)</label>
-                  {{ form.apartment_address}}
-            </div>
-            <!--address-->
-
-            <!--Grid row-->
-            <div class="row">
-
-              <!--Grid column-->
-              <div class="col-lg-4 col-md-12 mb-4">
-
-                <label for="country">Country</label>
-                {% comment %} <select class="custom-select d-block w-100" id="country" required>
-                  <option value="">Choose...</option>
-                  <option>United States</option>
-                </select> {% endcomment %}
-                {{form.country}}
-                <div class="invalid-feedback">
-                  Please select a valid country.
+                  
                 </div>
 
-              </div>
-              <!--Grid column-->
+                <div class="form-group ml-10 ">
+                  
+                  <label for="shipping_address2" class="ml-3">Address 2 (optional)</label>
+                  <div class="col-sm-10">
+                     {{ form.apartment_address}}
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-4 col-md-12 ml-3 mb-4">
+
+                    <label for="country">Country</label>
+                    {% comment %} <select class="custom-select d-block w-100" id="country" required>
+                      <option value="">Choose...</option>
+                      <option>United States</option>
+                    </select> {% endcomment %}
+                    {{form.country}}
+                    <div class="invalid-feedback">
+                      Please select a valid country.
+                    </div>
+
+                  </div>
+
+                  <div class="col-lg-4 col-md-6 ml-3 mb-4">
+                    <label for="shipping_zip">Zip</label>
+                    <input type='text' placeholder='Zip code' id='shipping_zip' name='shipping_zip' class='form-control' />
+                    <div class="invalid-feedback">
+                      Zip code required.
+                    </div>
+
+                  </div>
+                </div>
+            <!--Grid row-->
 
               
-
-              <!--Grid column-->
-              <div class="col-lg-4 col-md-6 mb-4">
-
-                <label for="zip">Zip</label>
-                {% comment %} <input type="text" class="form-control" id="zip" placeholder="" required> {% endcomment %}
-                {{ form.zip}}
-                <div class="invalid-feedback">
-                  Zip code required.
-                </div>
-
-              </div>
-              <!--Grid column-->
-
-            </div>
-            <!--Grid row-->
+           
 
             <hr>
 
-            <div class="custom-control custom-checkbox">
+            <div class="ml-3 custom-control custom-checkbox">
                <input {% if form.same_billing_address.value%} checked {% endif %} type="checkbox" class="custom-control-input" name="same_billing_address" id="same-address"> 
               <label class="custom-control-label" for="same-address">Shipping address is the same as my billing
                 address</label>
             </div>
-            <div class="custom-control custom-checkbox">
+            <div class="ml-3 custom-control custom-checkbox">
                <input {% if form.save_info.value%} checked {% endif%}  type="checkbox" class="custom-control-input" name="save_info" id="save-info"> 
               <label class="custom-control-label" for="save-info">Save this information for next time</label>
             </div>
 
             <hr>
 
-            <div class="d-block my-3">
+            <div class="d-block ml-3 my-3">
               {% for value, name in form.fields.payment_option.choices %}
               <div class="custom-control custom-radio">
                 <input id="{{name}}" name="payment_option" value="{{ value }}" type="radio" class="custom-control-input"  required> 

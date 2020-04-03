@@ -7,13 +7,24 @@ PAYMENT_CHOICES = (
     ('P', "Paypal")
 )
 
+COUNTRIES_ONLY = ['US']
+
 
 class CheckoutForm(forms.Form):
     street_address = forms.CharField(widget=forms.TextInput(attrs={
-        'placeholder': '1234 Main St'
+        'placeholder': '1234 Main St',
+        'type': 'text',
+        'class': 'form-control'
+
+
+
     }))
     apartment_address = forms.CharField(required=False, widget=forms.TextInput(attrs={
-        'placeholder': 'Apartment or suite'
+        'placeholder': 'Apartment or suite',
+        'type': 'text',
+        'class': 'form-control'
+
+
     }))
 
     country = CountryField(blank_label='(select country)').formfield(
@@ -24,7 +35,7 @@ class CheckoutForm(forms.Form):
     zip = forms.CharField(widget=forms.TextInput(attrs={
         'class': 'form-control'
     }))
-    same_billing_address = forms.BooleanField(required=False)
+    same_shipping_address = forms.BooleanField(required=False)
     save_info = forms.BooleanField(required=False)
     payment_option = forms.ChoiceField(
         widget=forms.RadioSelect, choices=PAYMENT_CHOICES)
