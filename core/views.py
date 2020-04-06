@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
@@ -7,7 +8,14 @@ from django.views.generic import ListView, DetailView, View
 from django.shortcuts import redirect
 from django.utils import timezone
 from .forms import CheckoutForm
-from .models import Item, OrderItem, Order, BillingAddress
+from .models import Item, OrderItem, Order, BillingAddress, Payment
+import stripe
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 
 def products(request):
@@ -65,12 +73,93 @@ class CheckoutView(View):
             return redirect("core:order-summary")
 
 
+class PaymentView(View):
+    def get(self, *args, **kwargs):
+        # order
+        return render(self.request, "payment.html")
+
+    def post(self, *args, **kwargs):
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        amount = int(order.get_total() * 100)
+        token = self.request.POST.get('stripeToken')
+        print(token)
+
+        try:
+            charge = stripe.Charge.create(
+                amount=amount,
+                currency="usd",
+                source=token,
+            )
+
+            # create payment
+            payment = Payment()
+            payment.stripe_charge_id = charge['id']
+            payment.user = self.request.user
+            payment.amount = order.get_total()
+            payment.save()
+
+            # assign payment to order
+            order.ordered = True
+            order.payment = payment
+            order.save()
+
+            messages.success(self.request, "Your order was successful")
+            return redirect("/")
+
+        except stripe.error.CardError as e:
+            # Since it's a decline, stripe.error.CardError will be caught
+            messages.error(self.request, f"{e.error.message}")
+            return redirect("/")
+
+        except stripe.error.RateLimitError as e:
+            # Too many requests made to the API too quickly
+            messages.error(self.request, "Rate Limit Error")
+            return redirect("/")
+
+        except stripe.error.InvalidRequestError as e:
+            # Invalid parameters were supplied to Stripe's API
+            messages.error(self.request, "Invalid Parameters")
+            print('Status is: %s' % e.http_status)
+            print('Type is: %s' % e.error.type)
+            print('Code is: %s' % e.error.code)
+            # param is '' in this case
+            print('Param is: %s' % e.error.param)
+            print('Message is: %s' % e.error.message)
+            return redirect("/")
+
+        except stripe.error.AuthenticationError as e:
+            # Authentication with Stripe's API failed
+            # (maybe you changed API keys recently)
+            messages.error(self.request, "Authentication Error")
+            return redirect("/")
+
+        except stripe.error.APIConnectionError as e:
+            # Network communication with Stripe failed
+            messages.error(self.request, "Network Error")
+            return redirect("/")
+
+        except stripe.error.StripeError as e:
+            # Display a very generic error to the user, and maybe send
+            # yourself an email
+            messages.error(
+                self.request, "Something went wrong. you were not charged..")
+
+            messages.error(self.request, f"{e.error.message}")
+            return redirect("/")
+        except Exception as e:
+            # Something else happened, completely unrelated to Stripe
+            messages.error(
+                self.request, "Serious error occured. We have been notified")
+            return redirect("/")
+
+
 class HomeView(ListView):
     model = Item
     # is_paginated & page_obj passed in to home.html
     paginate_by = 10
 
-    # If the view is accessed from a GET request, an object_list (contains all the objects) is returned in the response
+    # If the view is accessed from a GET request, an object_list (contains all the objects)
+    # is returned in the response
     template_name = "home.html"
 
 

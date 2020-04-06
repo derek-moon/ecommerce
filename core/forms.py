@@ -15,16 +15,11 @@ class CheckoutForm(forms.Form):
         'placeholder': '1234 Main St',
         'type': 'text',
         'class': 'form-control'
-
-
-
     }))
     apartment_address = forms.CharField(required=False, widget=forms.TextInput(attrs={
         'placeholder': 'Apartment or suite',
         'type': 'text',
         'class': 'form-control'
-
-
     }))
 
     country = CountryField(blank_label='(select country)').formfield(
