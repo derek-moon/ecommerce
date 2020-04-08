@@ -8,7 +8,7 @@ from django.views.generic import ListView, DetailView, View
 from django.shortcuts import redirect
 from django.utils import timezone
 from .forms import CheckoutForm
-from .models import Item, OrderItem, Order, BillingAddress, Payment
+from .models import Item, OrderItem, Order, BillingAddress, Payment, Coupon
 import stripe
 import os
 from dotenv import load_dotenv
@@ -28,8 +28,11 @@ def products(request):
 class CheckoutView(View):
     def get(self, *args, **kwargs):
         form = CheckoutForm()
+        order = Order.objects.get(user=self.request.user, ordered=False)
+
         context = {
-            'form': form
+            'form': form,
+            'order': order
         }
         return render(self.request, "checkout.html", context)
 
@@ -305,3 +308,26 @@ def remove_single_item_from_cart(request, slug):
         # add a message saying the user doesnt have an order
         messages.info(request, "You do not have an active order")
         return redirect("core:product", slug=slug)
+
+
+def get_coupon(request, code):
+    try:
+        coupon = Coupon.objects.get(code=code)
+        return coupon
+
+    except ObjectDoesNotExist:
+        messages.info(request, "This coupon does not exist")
+        return redirect("core:checkout")
+
+
+def add_coupon(request, code):
+    try:
+        order = Order.objects.get(user=request.user, ordered=False)
+        order.coupon = get_coupon(request, code)
+        order.save()
+        messages.success(request, "Coupon applied successfully")
+        return redirect("core:checkout")
+
+    except ObjectDoesNotExist:
+        messages.info(request, "You do not have an active order")
+        return redirect("core:checkout")

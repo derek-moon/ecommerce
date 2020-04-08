@@ -84,6 +84,7 @@ class Order(models.Model):
         "BillingAddress", on_delete=models.SET_NULL, null=True)
     payment = models.ForeignKey(
         "Payment", on_delete=models.SET_NULL, null=True)
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.user.username
@@ -116,3 +117,10 @@ class Payment(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=15)
+
+    def __str__(self):
+        return self.code
